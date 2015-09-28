@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+
+require 'drb/drb'
+require 'benchmark'
+
+DRB_URI = "druby://0.0.0.0:#{ENV['PORT']}"
+
+class PanicRoom
+  require 'fakefs'
+
+  instance_methods.each do |name|
+    class_eval do
+      unless name =~ /^__|^instance_eval$|^binding$|^object_id$|^private_methods$|^protected_methods$|public_methods$/
+        undef_method name
+      end
+    end
+  end
+
+end
+
+class Runner
+  def execute_arbitrary_code(code)
+    stderr = StringIO.new
+    stdout = StringIO.new
+
+    $stderr = stderr
+    $stdout = stdout
+
+    panic_room = PanicRoom.new
+    code.untaint
+
+    wall_time = Benchmark.realtime do
+      result = proc do
+        panic_room.instance_eval do
+          $SAFE = 3
+          binding
+        end.eval(code)
+      end.call
+      puts result
+    end
+
+    exit_code = 0
+
+    output =  {
+      stdout: stdout.string,
+      stderr: stderr.string,
+      wall_time: wall_time * 1000,
+      exit_code: exit_code
+    }
+    return output
+  end
+end
+
+FRONT_OBJECT = Runner.new
+
+puts "Starting DRb server..."
+DRb.start_service(DRB_URI, FRONT_OBJECT, verbose: true, safe_level: 0)
+puts "Server is now listening on: #{DRB_URI}."
+DRb.thread.join
