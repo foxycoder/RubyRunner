@@ -29,6 +29,10 @@ class Runner
     panic_room = PanicRoom.new
     code.untaint
 
+    # Assume errors
+    exit_code = 1
+    wall_time = 0
+
     wall_time = Benchmark.realtime do
       result = proc do
         panic_room.instance_eval do
@@ -40,7 +44,10 @@ class Runner
     end
 
     exit_code = 0
-
+  rescue => e
+    stderr.puts "An error happened while running your code. If there was a message, you will find it below.\n\n\n"
+    stderr.puts e.message
+  ensure
     output =  {
       stdout: stdout.string,
       stderr: stderr.string,
