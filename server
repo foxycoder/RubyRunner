@@ -32,6 +32,7 @@ class Runner
     # Assume errors
     exit_code = 1
     wall_time = 0
+    result = nil
 
     wall_time = Benchmark.realtime do
       result = proc do
@@ -49,12 +50,18 @@ class Runner
     stderr.puts e.message
   ensure
     output =  {
-      stdout: stdout.string,
-      stderr: stderr.string,
+      result: result,
+      stdout: out_to_s(stdout),
+      stderr: out_to_s(stderr),
       wall_time: wall_time * 1000,
       exit_code: exit_code
     }
     return output
+  end
+
+  def out_to_s(out)
+    return out if out.is_a?(String)
+    out.string
   end
 end
 
