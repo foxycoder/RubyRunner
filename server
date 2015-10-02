@@ -34,20 +34,26 @@ class Runner
     wall_time = 0
     result = nil
 
-    wall_time = Benchmark.realtime do
-      result = proc do
-        panic_room.instance_eval do
-          $SAFE = 3
-          binding
-        end.eval(code)
-      end.call
-      puts result
+    Timeout::timeout(5) do
+      wall_time = Benchmark.realtime do
+        result = proc do
+          panic_room.instance_eval do
+            $SAFE = 3
+            binding
+          end.eval(code)
+        end.call
+        puts result
+      end
     end
 
     exit_code = 0
   rescue => e
-    stderr.puts "An error happened while running your code. If there was a message, you will find it below.\n\n\n"
-    stderr.puts e.message
+    if e.is_a?(Timeout::Error)
+      stderr.puts "Your code took too long to run, try again and see if you don't have any loops that keep on running"
+    else
+      stderr.puts "An error happened while running your code. If there was a message, you will find it below.\n\n\n"
+      stderr.puts e.message
+    end
   ensure
     output =  {
       result: result,
