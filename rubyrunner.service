@@ -4,9 +4,9 @@ Requires=docker.socket
 After=docker.socket
 
 [Service]
-ExecStartPre=/bin/sh -c "docker history codaisseur/rubyrunner:0.1.0 >/dev/null 2>&1 || docker pull codaisseur/rubyrunner:0.1.0"
+ExecStartPre=/bin/sh -c "docker history codaisseur/rubyrunner:0.1.1 >/dev/null 2>&1 || docker pull codaisseur/rubyrunner:0.1.1"
 ExecStartPre=/bin/sh -c "docker inspect rubyrunner >/dev/null 2>&1 && docker rm -f rubyrunner || true"
-ExecStart=/usr/bin/docker run -P --publish=8787:8787 --name=rubyrunner codaisseur/rubyrunner:0.1.0
+ExecStart=/usr/bin/docker run -P --publish=8787:8787 --name=rubyrunner codaisseur/rubyrunner:0.1.1
 ExecStopPost=-/usr/bin/docker rm -f rubyrunner
 Restart=on-failure
 RestartSec=5
