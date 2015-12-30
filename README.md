@@ -1,5 +1,11 @@
 # RubyRunner
 
+Build with:
+
+```bash
+docker build -t codaisseur/rubyrunner .
+```
+
 Start with:
 
 ```bash
